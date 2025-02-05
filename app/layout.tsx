@@ -1,16 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Afacad } from "next/font/google";
 import "./globals.css";
+import Link from "next/link";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+const afacad = Afacad({subsets: ['latin']})
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -24,9 +17,16 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${afacad.className} antialiased`}
       >
+         <header className="flex items-center justify-center py-6 text-white" style={{background: '#091020'}}>
+          <nav className="flex gap-5">
+            <Link href='/'  className="text-xl font-semibold">Home</Link>
+            <Link href='/rooms'  className="text-xl font-semibold">Rooms</Link>
+          </nav>
+        </header>
         {children}
       </body>
     </html>
