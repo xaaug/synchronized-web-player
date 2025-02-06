@@ -11,7 +11,7 @@ type Room = {
 }
 
 const Video = React.lazy(() => import("@/app/ui/video"));
-
+const API_KEY = process.env.YOUTUBE_API
 export default function RoomPage() {
     const pathname = usePathname()
     const roomId = pathname.split("/")[2];  // Extract roomId from the URL path
@@ -34,7 +34,7 @@ export default function RoomPage() {
 
             if (match && match[1]) {
                 fetch(
-                    `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${match[1]}&key=AIzaSyAaRuCq0XM-ywbjuLnvou_rQxOp6MNT0dc`
+                    `https://www.googleapis.com/youtube/v3/videos?part=snippet&id=${match[1]}&key=${API_KEY}`
                 )
                     .then((res) => res.json())
                     .then((data) => {console.log(data); setVideoData(data.items[0].snippet)})
