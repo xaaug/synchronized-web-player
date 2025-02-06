@@ -1,6 +1,11 @@
 "use client";
 
-import { ComputerDesktopIcon, PauseIcon, PlayIcon, TvIcon } from "@heroicons/react/16/solid";
+import {
+  ComputerDesktopIcon,
+  PauseIcon,
+  PlayIcon,
+  TvIcon,
+} from "@heroicons/react/16/solid";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { notFound } from "next/navigation";
@@ -12,6 +17,11 @@ declare global {
   }
 }
 
+type Room = {
+  roomId: string;
+  url: string;
+};
+
 export default function Video() {
   const [videoId, setVideoId] = useState<string | null>(null);
   const pathname = usePathname();
@@ -22,22 +32,29 @@ export default function Video() {
   const [progress, setProgress] = useState(0);
   const [isFullScreen, setIsFullScreen] = useState(false);
 
+  const roomObj: Room[] = JSON.parse(
+    localStorage.getItem("rooms") || "[]",
+  ).filter((room: Room) => room.roomId === roomId);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const link = localStorage.getItem(roomId);
+      const link = roomObj[0].url;
       if (link) {
-        const youtubeRegex = /(?:youtu\.be\/|youtube\.com\/(?:.*v=|embed\/|v\/|.+?[?&]v=))([^"&?\/\s]{11})/;
+        const youtubeRegex =
+          /(?:youtu\.be\/|youtube\.com\/(?:.*v=|embed\/|v\/|.+?[?&]v=))([^"&?\/\s]{11})/;
         const match = link.match(youtubeRegex);
         if (match && match[1]) {
-          setVideoId(`https://www.youtube.com/embed/${match[1]}?enablejsapi=1&controls=0&rel=0&autohide=1&disablekb=1&autoplay=1`);
-        } else if(link.trim()) {
-            notFound()
+          setVideoId(
+            `https://www.youtube.com/embed/${match[1]}?enablejsapi=1&controls=0&rel=0&autohide=1&disablekb=1&autoplay=1`,
+          );
+        } else if (link.trim()) {
+          notFound();
         } else {
-            notFound()
+          notFound();
         }
       }
     }
-  }, [roomId]);
+  }, [roomObj]);
 
   useEffect(() => {
     const loadYouTubeAPI = () => {
@@ -83,7 +100,7 @@ export default function Video() {
         playerRef.current.playVideo();
       }
     }
-  }, [isPlaying])
+  }, [isPlaying]);
 
   // Handle Seek (forward/backward)
   const handleSeek = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,7 +126,7 @@ export default function Video() {
       setIsFullScreen(true);
     } else {
       // Exit Fullscreen
-      const doc = document as any; 
+      const doc = document as any;
       if (doc.exitFullscreen) {
         doc.exitFullscreen();
       } else if (doc.webkitExitFullscreen) {
@@ -122,7 +139,6 @@ export default function Video() {
       setIsFullScreen(false);
     }
   };
-  
 
   // Listen to keypresses for keyboard shortcuts
   useEffect(() => {
@@ -152,27 +168,39 @@ export default function Video() {
     };
   }, [isPlaying, progress, togglePlay]);
 
-
   return (
     <div className="h-[80vh] w-[80%] mt-8 mx-auto">
       <div ref={iframeRef} className="w-full h-full"></div>
 
-      {progress > 0 && <div className="flex justify-between gap-4 mt-4 w-full">
-        <button onClick={togglePlay} className=" px-4 py-2 rounded">
-          {isPlaying ? <PauseIcon className="size-5" /> : <PlayIcon className="size-5" />}
-        </button>
-        <input
-          type="range"
-          min="0"
-          max={playerRef.current?.getDuration() || 100}
-          value={progress}
-          onChange={handleSeek}
-          className="w-full"
-        />
-        <button onClick={handleFullScreen} className=" text-black px-4 py-2 rounded">
-          {isFullScreen ? <TvIcon className="size-5" /> : <ComputerDesktopIcon className="size-5"/>}
-        </button>
-      </div>}
+      {progress > 0.01 && (
+        <div className="flex justify-between gap-4 mt-4 w-full">
+          <button onClick={togglePlay} className=" px-4 py-2 rounded">
+            {isPlaying ? (
+              <PauseIcon className="size-5" />
+            ) : (
+              <PlayIcon className="size-5" />
+            )}
+          </button>
+          <input
+            type="range"
+            min="0"
+            max={playerRef.current?.getDuration() || 100}
+            value={progress}
+            onChange={handleSeek}
+            className="w-full"
+          />
+          <button
+            onClick={handleFullScreen}
+            className=" text-black px-4 py-2 rounded"
+          >
+            {isFullScreen ? (
+              <TvIcon className="size-5" />
+            ) : (
+              <ComputerDesktopIcon className="size-5" />
+            )}
+          </button>
+        </div>
+      )}
     </div>
   );
 }
